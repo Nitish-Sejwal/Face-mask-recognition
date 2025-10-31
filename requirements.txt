@@ -1,8 +1,9 @@
 flask
+Flask==3.0.3
 numpy
+numpy==1.26.4
 opencv-python
+opencv-python==4.10.0.84
 tensorflow
 keras
-matplotlib
-pillow
-gunicorn
+pandas==2.2.2
