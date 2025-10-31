@@ -1,9 +1,7 @@
-flask
 Flask==3.0.3
-numpy
+tensorflow==2.16.1
+keras==3.4.1
 numpy==1.26.4
-opencv-python
-opencv-python==4.10.0.84
-tensorflow
-keras
 pandas==2.2.2
+opencv-python-headless==4.10.0.84
+gunicorn
