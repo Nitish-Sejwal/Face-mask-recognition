@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Load model
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-model = load_model("face_mask_detection.keras")
+model = load_model("face_mask_detection_fixed.keras")
 
 
 # {'mask_weared_incorrect': 0, 'with_mask': 1, 'without_mask': 2}
