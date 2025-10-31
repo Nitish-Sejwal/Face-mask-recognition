@@ -1,4 +1,7 @@
 Flask==3.0.3
 tensorflow==2.20.0
+keras==3.6.0
+numpy==1.26.4
+pandas==2.2.2
 opencv-python-headless==4.10.0.84
 gunicorn
