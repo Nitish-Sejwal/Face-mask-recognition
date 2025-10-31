@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Mask Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 2rem;
+            margin: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 1.5rem;
+        }
+
+        #preview {
+            display: none;
+            max-width: 100%;
+            height: auto;
+            border: 2px dashed #ccc;
+            margin: 1rem 0;
+        }
+
+        input[type="file"] {
+            margin-top: 1rem;
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .card {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        .theme-toggle {
+            margin-top: 2rem;
+            background-color: #6c757d;
+        }
+
+        .theme-toggle:hover {
+            background-color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Face Mask Detection </h1>
+
+        <input type="file" id="imageInput" accept="image/*">
+        <img id="preview" src="#" alt="Image preview">
+
+        <button onclick="sendImage()">Predict</button>
+        <div id="result"></div>
+
+        <button class="theme-toggle" onclick="toggleTheme()">Dark Mode🌙</button>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const result = document.getElementById('result');
+        const body = document.body;
+
+        imageInput.onchange = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                preview.style.display = 'block';
+                preview.src = URL.createObjectURL(file);
+                result.textContent = '';
+            }
+        };
+
+        function sendImage() {
+            const file = imageInput.files[0];
+            if (!file) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const label = data.label.split(':')[0].trim();
+                const emoji = {
+                    'Mask': '😷',
+                    'No Mask': '❌',
+                    'Improper': '⚠️',
+                    'with_mask': '😷',
+                    'without_mask': '❌',
+                    'mask_weared_incorrect': '⚠️'
+                }[label] || '🧐';
+                result.textContent = `${emoji} Prediction: ${data.label}`;
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                result.textContent = '❌ Error occurred during prediction.';
+            });
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>
