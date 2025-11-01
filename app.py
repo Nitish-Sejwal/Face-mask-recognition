@@ -29,31 +29,43 @@ def predict():
     npimg = np.frombuffer(file.read(), np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
 
-    # Convert BGR to RGB 
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if img is None:
+        return jsonify({'error': 'Invalid image format'})
 
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
+    # Convert to RGB and grayscale
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
 
-    # Crop
-    if len(faces) > 0:
-        x, y, w, h = faces[0]
-        face_img = img[y:y+h, x:x+w]
+    # Detect faces
+    faces = face_cascade.detectMultiScale(
+        gray,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(60, 60)
+    )
 
+    if len(faces) == 0:
+        # No face detected — fallback to whole image
+        face_img = cv2.resize(img_rgb, (IMG_SIZE, IMG_SIZE))
     else:
-        face_img = img
+        # Pick the largest detected face (more stable)
+        x, y, w, h = max(faces, key=lambda box: box[2] * box[3])
+        face_img = img_rgb[y:y+h, x:x+w]
+        face_img = cv2.resize(face_img, (IMG_SIZE, IMG_SIZE))
 
-    # Resize
-    resized = cv2.resize(face_img, (IMG_SIZE, IMG_SIZE))
-    normalized = resized / 255.0
+    # Normalize
+    normalized = face_img / 255.0
     input_tensor = np.expand_dims(normalized, axis=0)
 
     # Predict
     prediction = model.predict(input_tensor)[0]
     idx = np.argmax(prediction)
-    label = f"{CLASS_NAMES[idx]}: {prediction[idx]:.2f}"
+    confidence = prediction[idx]
+
+    label = f"{CLASS_NAMES[idx]} ({confidence * 100:.1f}%)"
 
     return jsonify({'label': label})
+
 
 if __name__ == '__main__':
     import os
